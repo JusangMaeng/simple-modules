@@ -8,3 +8,6 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+#binary
+char-dev-client
