@@ -109,9 +109,9 @@ static int __init char_dev_sysfs_init(void)
 static void __exit char_dev_sysfs_exit(void)
 {
 	device_destroy(char_dev_sysfs_class, char_dev_sysfs_dev_t);
-	cdev_del(char_dev_sysfs_cdev);
 	class_destroy(char_dev_sysfs_class);
-	unregister_chrdev_region(char_dev_sysfs_dev_t, 1);
+	unregister_chrdev_region(char_dev_sysfs_dev_t,1);
+	cdev_del(char_dev_sysfs_cdev);
 	
 	printk(KERN_INFO "module exit \n");
 }
