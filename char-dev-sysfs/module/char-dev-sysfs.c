@@ -67,7 +67,7 @@ static int __init char_dev_sysfs_init(void)
 	printk("\n Major No: %d Minor_no : %d \n", MAJOR(char_dev_sysfs_dev_t), MINOR(char_dev_sysfs_dev_t));
 
 	// argument name is class sub-dir as '/sys/class/char-dev'
-	char_dev_sysfs_class = class_create(THIS_MODULE, "char-dev"); 	
+	char_dev_sysfs_class = class_create(THIS_MODULE, "char-dev");
 	if(char_dev_sysfs_class == NULL) {
 		unregister_chrdev_region(char_dev_sysfs_dev_t,1);
 		printk("class_create fail");
@@ -86,7 +86,7 @@ static int __init char_dev_sysfs_init(void)
 	if(char_dev_sysfs_cdev == NULL) {
 		device_destroy(char_dev_sysfs_class, char_dev_sysfs_dev_t);
 		class_destroy(char_dev_sysfs_class);
-		unregister_chrdev_region(char_dev_sysfs_dev_t,1);		
+		unregister_chrdev_region(char_dev_sysfs_dev_t,1);
 		printk(KERN_ERR "failed to alloc cdev\n");
 		return -ENOMEM;
 	}
@@ -94,11 +94,11 @@ static int __init char_dev_sysfs_init(void)
 	cdev_init(char_dev_sysfs_cdev, &char_dev_sysfs_fops);
 
 	retval = cdev_add(char_dev_sysfs_cdev, char_dev_sysfs_dev_t, 1);
-	if(retval < 0) {		
+	if(retval < 0) {
+		cdev_del(char_dev_sysfs_cdev);
 		device_destroy(char_dev_sysfs_class, char_dev_sysfs_dev_t);
 		class_destroy(char_dev_sysfs_class);
 		unregister_chrdev_region(char_dev_sysfs_dev_t,1);
-		cdev_del(char_dev_sysfs_cdev);
 		printk(KERN_ERR "failed to add cdev\n");
 		return -EBUSY;
 	}
@@ -108,10 +108,10 @@ static int __init char_dev_sysfs_init(void)
 
 static void __exit char_dev_sysfs_exit(void)
 {
+	cdev_del(char_dev_sysfs_cdev);
 	device_destroy(char_dev_sysfs_class, char_dev_sysfs_dev_t);
 	class_destroy(char_dev_sysfs_class);
 	unregister_chrdev_region(char_dev_sysfs_dev_t,1);
-	cdev_del(char_dev_sysfs_cdev);
 	
 	printk(KERN_INFO "module exit \n");
 }
