@@ -5,9 +5,9 @@
 #include <asm/errno.h>
 
 /* Prototypes */
-static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
-static int device_open(struct inode *inode, struct file *file);
-static int device_release(struct inode *inode, struct file *file);
+static long char_dev_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
+static int char_dev_open(struct inode *inode, struct file *file);
+static int char_dev_release(struct inode *inode, struct file *file);
 
 #define DEVICE_NAME "char-dev" /* Dev name about '/proc/devices' */
 
@@ -17,19 +17,19 @@ static int char_dev_device_open = 0;	/* to prevent multiple access to the device
 
 static struct file_operations fops = {
 	.owner = THIS_MODULE,
-	.unlocked_ioctl = device_ioctl,
-	.open = device_open,
-	.release = device_release
+	.unlocked_ioctl = char_dev_ioctl,
+	.open = char_dev_open,
+	.release = char_dev_release
 };
 
-static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+static long char_dev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	printk(KERN_INFO "device_ioctl \n");
 	
 	return 0;
 }
 
-static int device_open(struct inode *inode, struct file *file)
+static int char_dev_open(struct inode *inode, struct file *file)
 {
 	if(char_dev_device_open) return -EBUSY;
 	
@@ -39,7 +39,7 @@ static int device_open(struct inode *inode, struct file *file)
 	
 	return 0;
 }
-static int device_release(struct inode *inode, struct file *file)
+static int char_dev_release(struct inode *inode, struct file *file)
 {
 	char_dev_device_open--;
 	
@@ -47,7 +47,7 @@ static int device_release(struct inode *inode, struct file *file)
 	
 	return 0;
 }
-static int __init simple_start(void)
+static int __init char_dev_init(void)
 {
 	printk(KERN_INFO "module init \n");
 	
@@ -60,15 +60,15 @@ static int __init simple_start(void)
 	return 0;
 }
 
-static void __exit simple_end(void)
+static void __exit char_dev_exit(void)
 {
 	unregister_chrdev(char_dev_major, DEVICE_NAME);
 	
 	printk(KERN_INFO "module exit \n");
 }
 
-module_init(simple_start);
-module_exit(simple_end);
+module_init(char_dev_init);
+module_exit(char_dev_exit);
 
 MODULE_LICENSE("GPL"); 
 MODULE_AUTHOR("Maeng"); 
