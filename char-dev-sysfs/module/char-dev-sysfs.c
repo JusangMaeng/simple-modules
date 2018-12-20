@@ -16,12 +16,12 @@ static int char_dev_sysfs_release(struct inode *inode, struct file *file);
 
 /* Global variables */
 static int char_dev_sysfs_device_open = 0;	/* to prevent multiple access to the device */
-static dev_t first;	/* Global variable for the first device number */
+static dev_t char_dev_sysfs_dev_t;	/* Global variable for the first device number */
 static struct cdev* char_dev_sysfs_cdev;
 static struct class* char_dev_sysfs_class;
 
 
-static struct file_operations fops = {
+static struct file_operations char_dev_sysfs_fops = {
 	.owner = THIS_MODULE,
 	.unlocked_ioctl = char_dev_sysfs_ioctl,
 	.open = char_dev_sysfs_open,
@@ -58,46 +58,46 @@ static int __init char_dev_sysfs_init(void)
 	int retval;
 	printk(KERN_INFO "module init \n");
 
-	retval = alloc_chrdev_region(&first, 0,1, DEVICE_NAME);
+	retval = alloc_chrdev_region(&char_dev_sysfs_dev_t, 0,1, DEVICE_NAME);
 	if(retval < 0) {
 		printk("alloc_chrdev_region() failed!\n");
 		return -EBUSY;
 	}
 
-	printk("\n Major No: %d Minor_no : %d \n", MAJOR(first), MINOR(first));
+	printk("\n Major No: %d Minor_no : %d \n", MAJOR(char_dev_sysfs_dev_t), MINOR(char_dev_sysfs_dev_t));
 
 	// argument name is class sub-dir as '/sys/class/char-dev'
 	char_dev_sysfs_class = class_create(THIS_MODULE, "char-dev"); 	
 	if(char_dev_sysfs_class == NULL) {
-		unregister_chrdev_region(first,1);
+		unregister_chrdev_region(char_dev_sysfs_dev_t,1);
 		printk("class_create fail");
 		return -ENOMEM;
 	}
 
-	if(device_create(char_dev_sysfs_class, NULL, first, NULL, DEVICE_NAME) == NULL)
+	if(device_create(char_dev_sysfs_class, NULL, char_dev_sysfs_dev_t, NULL, DEVICE_NAME) == NULL)
 	{
 	    class_destroy(char_dev_sysfs_class);
-	    unregister_chrdev_region(first,1);
+	    unregister_chrdev_region(char_dev_sysfs_dev_t,1);
 	    printk("device_create fail");
 	    return -ENOMEM;
 	}
 
 	char_dev_sysfs_cdev = cdev_alloc();
 	if(char_dev_sysfs_cdev == NULL) {
-		device_destroy(char_dev_sysfs_class, first);
+		device_destroy(char_dev_sysfs_class, char_dev_sysfs_dev_t);
 		class_destroy(char_dev_sysfs_class);
-		unregister_chrdev_region(first,1);		
+		unregister_chrdev_region(char_dev_sysfs_dev_t,1);		
 		printk(KERN_ERR "failed to alloc cdev\n");
 		return -ENOMEM;
 	}
 
-	cdev_init(char_dev_sysfs_cdev, &fops);
+	cdev_init(char_dev_sysfs_cdev, &char_dev_sysfs_fops);
 
-	retval = cdev_add(char_dev_sysfs_cdev, first, 1);
+	retval = cdev_add(char_dev_sysfs_cdev, char_dev_sysfs_dev_t, 1);
 	if(retval < 0) {		
-		device_destroy(char_dev_sysfs_class, first);
+		device_destroy(char_dev_sysfs_class, char_dev_sysfs_dev_t);
 		class_destroy(char_dev_sysfs_class);
-		unregister_chrdev_region(first,1);
+		unregister_chrdev_region(char_dev_sysfs_dev_t,1);
 		cdev_del(char_dev_sysfs_cdev);
 		printk(KERN_ERR "failed to add cdev\n");
 		return -EBUSY;
@@ -108,10 +108,10 @@ static int __init char_dev_sysfs_init(void)
 
 static void __exit char_dev_sysfs_exit(void)
 {
-	device_destroy(char_dev_sysfs_class, first);
+	device_destroy(char_dev_sysfs_class, char_dev_sysfs_dev_t);
 	cdev_del(char_dev_sysfs_cdev);
 	class_destroy(char_dev_sysfs_class);
-	unregister_chrdev_region(first, 1);
+	unregister_chrdev_region(char_dev_sysfs_dev_t, 1);
 	
 	printk(KERN_INFO "module exit \n");
 }
