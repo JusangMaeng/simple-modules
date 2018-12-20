@@ -11,3 +11,4 @@ dkms.conf
 
 #binary
 char-dev-client
+char-dev-sysfs-client
