@@ -60,7 +60,7 @@ static int __init char_dev_sysfs_init(void)
 
 	retval = alloc_chrdev_region(&char_dev_sysfs_dev_t, 0,1, DEVICE_NAME);
 	if(retval < 0) {
-		printk("alloc_chrdev_region() failed!\n");
+		printk(KERN_ERR "alloc_chrdev_region() failed!\n");
 		return -EBUSY;
 	}
 
@@ -70,16 +70,16 @@ static int __init char_dev_sysfs_init(void)
 	char_dev_sysfs_class = class_create(THIS_MODULE, "char-dev");
 	if(char_dev_sysfs_class == NULL) {
 		unregister_chrdev_region(char_dev_sysfs_dev_t,1);
-		printk("class_create fail");
+		printk(KERN_ERR "class_create fail");
 		return -ENOMEM;
 	}
 
 	if(device_create(char_dev_sysfs_class, NULL, char_dev_sysfs_dev_t, NULL, DEVICE_NAME) == NULL)
 	{
-	    class_destroy(char_dev_sysfs_class);
-	    unregister_chrdev_region(char_dev_sysfs_dev_t,1);
-	    printk("device_create fail");
-	    return -ENOMEM;
+		class_destroy(char_dev_sysfs_class);
+		unregister_chrdev_region(char_dev_sysfs_dev_t,1);
+		printk(KERN_ERR "device_create fail");
+		return -ENOMEM;
 	}
 
 	char_dev_sysfs_cdev = cdev_alloc();
